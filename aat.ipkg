@@ -1,0 +1,8 @@
+package aat
+
+sourcedir = src
+
+modules = Data.AA.Tree
+        , Data.AA.Map
+	, Data.AA.MultiSet
+
