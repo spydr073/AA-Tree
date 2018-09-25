@@ -1,4 +1,3 @@
-
 -----------------------------------------------------------------------------------------[ Module ]
 --{1
 --                                                                              (\_/)
@@ -133,6 +132,12 @@ intersect (MS s) (MS t) = MS $ foldr (\x,r => if member x t
                                                 else r
                                      ) empty s
 
+export
+filter : Ord a => (CPair a -> Bool) -> MultiSet a -> MultiSet a
+filter f (MS s) = MS $ foldr (\x,s' => case f x of
+                                              True  => insert x s'
+                                              False => s'
+                                  ) empty s
 
 export
 fromList : Ord a => List a -> MultiSet a
