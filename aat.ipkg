@@ -4,5 +4,6 @@ sourcedir = src
 
 modules = Data.AA.Tree
         , Data.AA.Map
-	, Data.AA.MultiSet
+        , Data.AA.MultiSet
+        , Data.AA.Bag
 

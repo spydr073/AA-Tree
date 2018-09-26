@@ -24,6 +24,14 @@ data CPair : Type -> Type where
   Elem : a -> Nat -> CPair a
 
 export
+elem : CPair a -> a
+elem (Elem x _) = x
+
+export
+card : CPair a -> Nat
+card (Elem _ n) = n
+
+export
 (Eq a) => Eq (CPair a) where
   (==) (Elem x1 _) (Elem x2 _) = x1 == x2
 
