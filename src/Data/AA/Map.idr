@@ -109,8 +109,8 @@ toList (M t) = Tree.toList t
 
 ||| Convert a finite mapping to a list of Key-Value tuples.
 export
-fromList : (Ord a) => List (KVPair a b) -> Map a b
-fromList lst = M $ Tree.fromList lst
+fromList : (Ord a) => List (a,b) -> Map a b
+fromList lst = M $ foldr (\(k,v),t => insert (KV k v) t) empty lst
 
 ||| Return a list of all Keys present in a KV-Tree.
 export
