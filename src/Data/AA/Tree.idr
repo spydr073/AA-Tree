@@ -259,7 +259,6 @@ export
 fromList : Ord a => List a -> Tree a
 fromList = foldr insert empty
 
-
 --}
 
 

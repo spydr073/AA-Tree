@@ -6,6 +6,7 @@
 --                                                                             #######
 --                                                                           KILLER BUNNY
 --                                                                             APPROVED
+-- Represent a Multiset with an AA-Tree of element-count cells.
 
 module Data.AA.Set.MultiSet
 
@@ -19,6 +20,7 @@ import Data.AA.Tree
 ------------------------------------------------------------------------------------------[ Types ]
 --{1
 
+||| Element-Count pair to use as tree nodes.
 public export
 data Cell : Type -> Type where
   Elem : a -> Nat -> Cell a
@@ -35,6 +37,8 @@ export
 (Show a) => Show (Cell a) where
   show (Elem x n) = concat ["{ ", show x, " : ", show n, " }"]
 
+
+||| Wrapper to use a tree of elem-count cells as a multiset.
 export
 data MSet : Type -> Type where
   MS : Tree (Cell a) -> MSet a
@@ -47,6 +51,7 @@ export
 Functor MSet where
   map f (MS s) = MS $ (\(Elem x n) => Elem (f x) n) <$> s
 
+||| Just like regular foldr, but f is fixed to 'Cell a' domain.
 export
 foldr : (f : Cell a -> acc -> acc) -> acc -> MSet a -> acc
 foldr f acc (MS s) = foldr f acc s
@@ -56,33 +61,25 @@ foldr f acc (MS s) = foldr f acc s
 ----------------------------------------------------------------------------------------[ Prelude ]
 --{1
 
+||| The empty multiset.
 export
 empty : MSet a
 empty = MS Tree.empty
 
 
+||| Predicate for empty set
 export
 isEmpty : MSet a -> Bool
 isEmpty (MS t) = Tree.isEmpty t
 
 
+||| The order, or 'size', of a multiset.
 export
 order : MSet a -> Nat
 order = foldr (\(Elem _ n),acc =>  n + acc) 0
 
 
-export
-count : Ord a => a -> MSet a -> Nat
-count x (MS t) = go t where
-  go : Tree (Cell a) -> Nat
-  go t with (t)
-    | E                   = Z
-    | T _ (Elem x' n) l r = case compare x x' of
-                              LT => go l
-                              EQ => n
-                              GT => go r
-
-
+||| Get the cardinality, or 'count', of a set element.
 export
 card : Ord a => a -> MSet a -> Nat
 card x (MS t) = go t where
@@ -95,6 +92,7 @@ card x (MS t) = go t where
                               GT => go r
 
 
+||| Check if an item is a member of a given multiset.
 export
 member : Ord a => a -> MSet a -> Bool
 member x s with (card x s)
@@ -102,20 +100,29 @@ member x s with (card x s)
   | _ = True
 
 
+||| Insert an element into a multiset.
 export
 insert : Ord a => a -> MSet a -> MSet a
-insert x s with (count x s)
+insert x s with (card x s)
   | Z = let MS t = s in MS $ Tree.insert (Elem x 1) t
   | n = let MS t = s in MS $ Tree.insert (Elem x (S n)) t
 
 
+||| Delete an element from a multiset.
 export
 delete : Ord a => a -> MSet a -> MSet a
-delete x s with (count x s)
+delete x s with (card x s)
   | Z   = s
   | S n = let MS t = s in MS $ Tree.insert (Elem x n) t
 
 
+||| Delete all instances of an element from a multiset.
+export
+deleteAll : Ord a => a -> MSet a -> MSet a
+deleteAll x (MS t) = MS $ Tree.delete (Elem x Z) t
+
+
+||| Multiset union operator.
 export
 union : Ord a => MSet a -> MSet a -> MSet a
 union (MS s) (MS t) = MS $ foldr alg s t
@@ -126,6 +133,7 @@ union (MS s) (MS t) = MS $ foldr alg s t
                               in Tree.insert (Elem v (n + m)) r
 
 
+||| Multiset intersection operator.
 export
 intersect : Ord a => MSet a -> MSet a -> MSet a
 intersect (MS s) t = MS $ foldr alg empty s
@@ -136,6 +144,7 @@ intersect (MS s) t = MS $ foldr alg empty s
       | m = Tree.insert (Elem v (min n m)) r
 
 
+||| Filter element in a set by a given predicate.
 export
 filter : Ord a => (Cell a -> Bool) -> MSet a -> MSet a
 filter f (MS s) = MS $ foldr (\x,s' => case f x of
@@ -143,11 +152,14 @@ filter f (MS s) = MS $ foldr (\x,s' => case f x of
                                               False => s'
                                   ) empty s
 
+
+||| Convert a list into a multiset.
 export
 fromList : Ord a => List a -> MSet a
 fromList = foldr (\x,r => insert x r) empty
 
 
+||| Get a list of all unique set elements.
 export
 elems : Ord a => MSet a -> List a
 elems = foldr alg []

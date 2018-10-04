@@ -7,6 +7,8 @@
 --                                                                             #######
 --                                                                           KILLER BUNNY
 --                                                                             APPROVED
+--
+-- Finite mapping using an AA-Tree of key-value tuples.
 
 module Data.AA.Map
 
@@ -22,26 +24,20 @@ import Data.AA.Tree
 
 ||| Key Value pair to use as tree leaf nodes.
 public export
-data KVPair : Type -> Type -> Type where
-  KV : k -> v -> KVPair k v
+data Cell : Type -> Type -> Type where
+  Elem : k -> v -> Cell k v
 
-
-||| Equality for Key-Value pairs.
 export
-(Eq k) => Eq (KVPair k v) where
-  (==) (KV k1 _) (KV k2 _) = k1 == k2
+(Eq k) => Eq (Cell k v) where
+  (==) (Elem k1 _) (Elem k2 _) = k1 == k2
 
-
-||| Partial Ordering for Key-Value pairs.
 export
-(Ord k) => Ord (KVPair k v) where
-  compare (KV k1 _) (KV k2 _) = compare k1 k2
+(Ord k) => Ord (Cell k v) where
+  compare (Elem k1 _) (Elem k2 _) = compare k1 k2
 
-
-||| Represent Key-Value pairs as a String.
 export
-(Show k, Show v) => Show (KVPair k v) where
-  show (KV k v) = "{ " ++  show k ++ " : " ++ show v ++ " }"
+(Show k, Show v) => Show (Cell k v) where
+  show (Elem k v) = "{ " ++  show k ++ " : " ++ show v ++ " }"
 
 --}
 
@@ -51,7 +47,7 @@ export
 ||| Use an AATree of Key-Value pairs as a Finite Map.
 export
 data Map : Type -> Type -> Type where
-  M : Tree (KVPair a b) -> Map a b
+  M : Tree (Cell a b) -> Map a b
 
 --}
 
@@ -77,66 +73,66 @@ order (M t) = Tree.order t
 export
 find : Ord a => a -> Map a b -> Maybe b
 find x (M t) = go t
-  where go : Ord a => Tree (KVPair a b) -> Maybe b
+  where go : Ord a => Tree (Cell a b) -> Maybe b
         go t with (t)
-          | E                = Nothing
-          | T _ (KV k v) l r = case compare x k of
-                                 LT => go l
-                                 EQ => Just v
-                                 GT => go r
+          | E                  = Nothing
+          | T _ (Elem k v) l r = case compare x k of
+                                   LT => go l
+                                   EQ => Just v
+                                   GT => go r
 
 ||| Bind a value to a given key. If it already exists, overwrite the old value.
 export
 bind : Ord a => a -> b -> Map a b -> Map a b
-bind k v (M t) = M $ insert (KV k v) t
+bind k v (M t) = M $ insert (Elem k v) t
 
 ||| Delete a node from the finite mapping that matches a key.
 export
 delete : Ord a => a -> Map a b -> Map a b
 delete x (M t) = go t
-  where go : Ord a => Tree (KVPair a b) -> Map a b
+  where go : Ord a => Tree (Cell a b) -> Map a b
         go t with (t)
           | E                = M E
           -- We do not care what v is, so just use the first one as a dummy
           -- value in AA.delete.
-          | T _ (KV k v) l r = M $ Tree.delete (KV x v) t
+          | T _ (Elem k v) l r = M $ Tree.delete (Elem x v) t
 
 
 ||| Convert a list of Key-Value tuples to a finite mapping.
 export
-toList : Map a b -> List (KVPair a b)
+toList : Map a b -> List (Cell a b)
 toList (M t) = Tree.toList t
 
 ||| Convert a finite mapping to a list of Key-Value tuples.
 export
 fromList : (Ord a) => List (a,b) -> Map a b
-fromList lst = M $ foldr (\(k,v),t => insert (KV k v) t) empty lst
+fromList lst = M $ foldr (\(k,v),t => insert (Elem k v) t) empty lst
 
-||| Return a list of all Keys present in a KV-Tree.
+||| Return a list of all Keys present in a Elem-Tree.
 export
 keyList : Map a b -> List a
-keyList m = map (\(KV k v) => k) $ toList m
+keyList m = map (\(Elem k v) => k) $ toList m
 
-||| Return a list of all Values present in a KV-Tree.
+||| Return a list of all Values present in a Elem-Tree.
 export
 valueList : Map a b -> List b
-valueList m = map (\(KV k v) => v) $ toList m
+valueList m = map (\(Elem k v) => v) $ toList m
 
-||| Just like regular foldr, but f is fixed to 'KVPair a b' domain.
+||| Just like regular foldr, but f is fixed to 'Cell a b' domain.
 export
-foldr : (f : KVPair a b -> acc -> acc) -> acc -> Map a b -> acc
+foldr : (f : Cell a b -> acc -> acc) -> acc -> Map a b -> acc
 foldr f acc (M t) = foldr f acc t
 
 
-||| String representation of a KV-Tree finite mapping.
+||| String representation of a Elem-Tree finite mapping.
 export
-(Show (KVPair a b)) => Show (Map a b) where
+(Show (Cell a b)) => Show (Map a b) where
   show m = case toList m of
                   []  => "[]"
                   [x] => "[ " ++ show x ++ " ]"
                   xs  => "[ " ++ (go xs) ++ "\n]"
   where
-    go : List (KVPair a b) -> String
+    go : List (Cell a b) -> String
     go lst = case lst of
                []      => ""
                [x]     => show x

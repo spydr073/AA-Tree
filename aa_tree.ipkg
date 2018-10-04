@@ -1,0 +1,9 @@
+package aa_tree
+
+sourcedir = src
+
+modules = Data.AA.Tree
+        , Data.AA.Map
+        , Data.AA.Set.MultiSet
+        , Data.AA.Set.IndexMultiSet
+

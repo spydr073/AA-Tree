@@ -7,7 +7,7 @@
 --                                                                           KILLER BUNNY
 --                                                                             APPROVED
 --
--- This module provides a data structure for indexed bins.
+-- This module provides a data structure for indexed bins of multisets.
 --
 
 module Data.AA.Set.IndexMultiSet
@@ -28,20 +28,14 @@ public export
 data Cell : Type -> Type -> Type where
   Bin : k -> MSet v -> Cell k v
 
-
-||| Equality for bag elements.
 export
 (Eq k) => Eq (Cell k v) where
   (==) (Bin k1 _) (Bin k2 _) = k1 == k2
 
-
-||| Partial Ordering for bag elements.
 export
 (Ord k) => Ord (Cell k v) where
   compare (Bin k1 _) (Bin k2 _) = compare k1 k2
 
-
-||| Represent bins as a String.
 export
 (Show k, Show v) => Show (Cell k v) where
   show (Bin k v) = "{ " ++  show k ++ " : " ++ show v ++ " }"
@@ -51,7 +45,7 @@ export
 ----------------------------------------------------------------------------------------[ Prelude ]
 --{1
 
-||| Use an AATree of bag elements to model a bag.
+||| Use an AATree of bin cells to model an indexed multiset.
 export
 data IMSet : Type -> Type -> Type where
   B : Tree (Cell a b) -> IMSet a b
@@ -61,17 +55,17 @@ data IMSet : Type -> Type -> Type where
 --------------------------------------------------------------------------------------------[ API ]
 --{1
 
-||| The empty bag.
+||| The empty indexed multiset.
 export
 empty : IMSet a b
 empty = B Tree.empty
 
-||| Check if bag is empty.
+||| Check if indexed multiset is empty.
 export
 isEmpty : IMSet a b -> Bool
 isEmpty (B t) = Tree.isEmpty t
 
-||| Order of the bag - i.e.- number of bins
+||| Order of the indexed multiset - i.e.- number of indexes.
 export
 order : IMSet a b -> Nat
 order (B t) = Tree.order t
@@ -88,6 +82,7 @@ find x (B t) = go t
                                   EQ => Just v
                                   GT => go r
 
+
 ||| Insert values into a bin given an index.
 export
 insert : (Ord a, Ord b) => a -> MSet b -> IMSet a b -> IMSet a b
@@ -96,7 +91,7 @@ insert k v b with (find k b)
   | Just v' = let B t = b in B $ Tree.insert (Bin k (union v v')) t
 
 
-||| Remove a bin from the bag.
+||| Remove a bin from the indexed multiset.
 export
 delete : Ord a => a -> IMSet a b -> IMSet a b
 delete x (B t) = go t
@@ -106,12 +101,12 @@ delete x (B t) = go t
           | T _ _ _ _ = B $ Tree.delete (Bin x empty) t
 
 
-||| Convert a bag into a list of bins.
+||| Convert an indexed multiset into a list of bins.
 export
 toList : IMSet a b -> List (Cell a b)
 toList (B t) = Tree.toList t
 
-||| Convert a list of bins into a bag.
+||| Convert a list of bins into an indexed multiset.
 export
 fromList : (Ord a) => List (Cell a b) -> IMSet a b
 fromList lst = B $ Tree.fromList lst
@@ -132,7 +127,7 @@ foldr : (f : Cell a b -> acc -> acc) -> acc -> IMSet a b -> acc
 foldr f acc (B t) = foldr f acc t
 
 
-||| String representation of a bag.
+||| String representation of an indexd multiset.
 export
 (Show (Cell a b)) => Show (IMSet a b) where
   show b = case toList b of
