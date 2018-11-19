@@ -1,4 +1,4 @@
-package aa_tree
+package aa-tree
 
 sourcedir = src
 
@@ -6,5 +6,7 @@ modules = Data.AA.Tree
         , Data.AA.Map
         , Data.AA.Set.Set
         , Data.AA.Set.MultiSet
-        , Data.AA.Set.IndexMultiSet
+
+	, Data.AA.Set.IndexMultiSet
+        , Data.AA.Set.NatIso
 

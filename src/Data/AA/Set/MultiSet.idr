@@ -56,6 +56,11 @@ export
 foldr : (f : Cell a -> acc -> acc) -> acc -> MSet a -> acc
 foldr f acc (MS s) = foldr f acc s
 
+||| Just like regular foldl, but f is fixed to 'Cell a' domain.
+export
+foldl : (f : acc -> Cell a -> acc) -> acc -> MSet a -> acc
+foldl f acc (MS s) = foldl f acc s
+
 --}
 
 ----------------------------------------------------------------------------------------[ Prelude ]

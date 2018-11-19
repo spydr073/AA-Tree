@@ -34,8 +34,13 @@ export
 Functor Set where
   map f (S t) = S $ f <$> t
 
+export
 Foldable Set where
   foldr f acc (S t) = foldr f acc t
+
+export
+Eq a => Eq (Set a) where
+  (==) (S s) (S t) = s == t
 
 --}
 

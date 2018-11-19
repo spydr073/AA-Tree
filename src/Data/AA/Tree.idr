@@ -48,9 +48,10 @@ Functor Tree where
 ||| Fold over a tree
 export
 Foldable Tree where
-  foldr f acc t = case t of
-                    E         => acc
-                    T _ k l r => foldr f (f k (foldr f acc r)) l
+  foldr f acc t with (t)
+    | E         = acc
+    | T _ k l r = foldr f (f k (foldr f acc r)) l
+
 
 --}
 
@@ -258,6 +259,17 @@ toList = foldr (::) []
 export
 fromList : Ord a => List a -> Tree a
 fromList = foldr insert empty
+
+
+-- not very efficient...
+export
+Eq a => Eq (Tree a) where
+  (==) t1 t2 with (compare (order t1) (order t2))
+    | EQ = foldr (\x,acc => if x then acc else False) True $
+                 zipWith (\x,y => if x == y then True else False)
+                         (Tree.toList t1)
+                         (Tree.toList t2)
+    | _  = False
 
 --}
 
