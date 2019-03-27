@@ -43,9 +43,18 @@ export
 data MSet : Type -> Type where
   MS : Tree (Cell a) -> MSet a
 
+
 export
 (Show a) => Show (MSet a) where
-  show (MS s) = "[\n" ++ (foldr (\x,r => "  " ++ show x ++ "\n" ++ r) "" s) ++ "]"
+  show (MS s) with (s)
+    | E         = "[]"
+    | T _ x E E = "[ " ++ show x ++ " ]"
+    | _         = "[\n" ++ go s ++ "]"
+    where go : Show a => Tree (Cell a) -> String
+          go (t) with (t)
+            | E         = ""
+            | T _ x l r = go l <+> "  " <+> show x <+> "\n" <+> go r
+
 
 export
 Functor MSet where
@@ -72,10 +81,16 @@ empty : MSet a
 empty = MS Tree.empty
 
 
-||| Predicate for empty set
+||| Predicate for empty set.
 export
 isEmpty : MSet a -> Bool
 isEmpty (MS t) = Tree.isEmpty t
+
+
+||| Lift a single value into a MSet.
+export
+singleton : a -> MSet a
+singleton x = MS $ T 1 (Elem x 1) E E
 
 
 ||| The order, or 'size', of a multiset.

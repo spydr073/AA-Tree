@@ -22,6 +22,7 @@ import Data.AA.Tree
 ----------------------------------------------------------------------------------------[ Prelude ]
 --{1
 
+public export
 data Cell : Type -> Type where
   Elem : a -> Nat -> Cell a
 
@@ -31,7 +32,7 @@ Eq a => Eq (Cell a) where
 Ord a => Ord (Cell a) where
   compare (Elem x1 n1) (Elem x2 n2) = compare x1 x2
 
-export
+public export
 data NatIso : Type -> Type where
   NI : Nat -> Tree (Cell a) -> NatIso a
 

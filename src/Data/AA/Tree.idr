@@ -16,6 +16,9 @@ module Data.AA.Tree
 %default total
 %access private
 
+%flag C "-O3"
+%flag C "-g"
+
 --}
 
 -------------------------------------------------------------------------------------------[ Core ]
@@ -127,7 +130,7 @@ insert x t with (t)
   | E           = T 1 x E E
   | T l k tl tr = case compare x k of
                     LT => (split . skew) $ T l k (insert x tl) tr
-                    EQ => T l x tl tr
+                    EQ => t
                     GT => (split . skew) $ T l k tl (insert x tr)
 
 

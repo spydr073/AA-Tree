@@ -17,6 +17,9 @@ import Data.AA.Tree
 %default total
 %access private
 
+%flag C "-O3"
+%flag C "-g"
+
 --}
 
 ----------------------------------------------------------------------------------------[ KV Pair ]
@@ -87,8 +90,8 @@ find x (M t) = go t
 
 ||| Bind a value to a given key. If it already exists, overwrite the old value.
 export
-bind : Ord a => KVPair a b -> Map a b -> Map a b
-bind x (M t) = M $ insert x t
+bind : Ord a => a -> b -> Map a b -> Map a b
+bind k v (M t) = M $ insert (KV k v) t
 
 
 ||| Delete a node from the finite mapping that matches a key.
@@ -139,7 +142,7 @@ foldr f acc (M t) = foldr f acc t
 ||| from the latest key. Equivalent to the set operation `union S T`.
 export
 union : Ord a => Map a b -> Map a b -> Map a b
-union = Map.foldr (\kv,acc => bind kv acc)
+union = Map.foldr (\(KV k v), acc => bind k v acc)
 
 
 ||| Get the intersection between 2 finite mappings. If the values
@@ -149,8 +152,8 @@ export
 intersect : Ord a => Map a b -> Map a b -> Map a b
 intersect s t = Map.foldr (\kv,m => let KV k v = kv
                                     in case find k s of
-                                            Just _  => bind kv m
-                                            Nothing => m
+                                         Just _  => bind k v m
+                                         Nothing => m
                           ) empty t
 
 
@@ -159,9 +162,9 @@ intersect s t = Map.foldr (\kv,m => let KV k v = kv
 export
 diff : Ord a => Map a b -> Map a b -> Map a b
 diff s t = Map.foldr (\kv,m => let KV k v = kv
-                                    in case find k t of
-                                            Just _  => m
-                                            Nothing => bind kv m
+                               in case find k t of
+                                    Just _  => m
+                                    Nothing => bind k v m
                           ) empty s
 
 
@@ -169,9 +172,9 @@ diff s t = Map.foldr (\kv,m => let KV k v = kv
 export
 (Show (KVPair a b)) => Show (Map a b) where
   show m = case toList m of
-                  []  => "[]"
-                  [x] => "[ " ++ show x ++ " ]"
-                  xs  => "[ " ++ (go xs) ++ "\n]"
+             []  => "[]"
+             [x] => "[ " ++ show x ++ " ]"
+             xs  => "[ " ++ (go xs) ++ "\n]"
   where
     go : List (KVPair a b) -> String
     go lst = case lst of
